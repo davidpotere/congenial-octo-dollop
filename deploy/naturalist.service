@@ -1,0 +1,15 @@
+[Unit]
+Description=Pine Ridge Naturalist
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=__USER__
+WorkingDirectory=__DIR__
+Environment=PATH=__DIR__/.venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=__DIR__/.venv/bin/python -m naturalist serve --port 8787
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

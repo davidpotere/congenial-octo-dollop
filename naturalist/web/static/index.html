@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1026">
+  <title>Pine Ridge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%23f5c96b'/></svg>">
+</head>
+<body>
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <header class="stage">
+    <div class="topbar">
+      <div class="place"><span id="place-name">Pine Ridge</span><span class="dot">·</span><span id="place-town">Arlington, MA</span></div>
+      <div class="controls">
+        <button id="btn-sound" class="pill" aria-pressed="false" title="Soundscape driven by the station">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
+          <span>Listen to outside</span>
+        </button>
+      </div>
+    </div>
+    <div class="now">
+      <div class="temp"><span id="temp">--</span><sup>°</sup></div>
+      <p class="sentence" id="sentence">Listening to the sky…</p>
+      <dl class="facts" id="facts"></dl>
+    </div>
+    <div class="demo-banner" id="demo-banner" hidden>Sample data: connect your devices in <code>.env</code> to bring Pine Ridge to life</div>
+  </header>
+
+  <main>
+    <section class="card brief" id="brief-card" hidden>
+      <div class="brief-head">
+        <div>
+          <div class="eyebrow" id="brief-kicker">This morning</div>
+          <h2 id="brief-headline"></h2>
+        </div>
+        <button class="play" id="btn-brief" title="Play the morning brief">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+      <p class="lede" id="brief-greeting"></p>
+      <div class="brief-sections" id="brief-sections"></div>
+      <div class="brief-links" id="brief-links"></div>
+    </section>
+
+    <section class="card wide">
+      <div class="eyebrow">Next 24 hours</div>
+      <div id="hourly" class="hourly"></div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="eyebrow">Ten days</div>
+        <ol id="daily" class="daily"></ol>
+      </section>
+
+      <section class="card sky-card">
+        <div class="eyebrow">Tonight's sky</div>
+        <div class="sky-top">
+          <canvas id="moon" width="120" height="120"></canvas>
+          <div>
+            <div class="big" id="moon-phase">—</div>
+            <div class="muted" id="moon-sub"></div>
+            <div class="muted" id="dark-window"></div>
+          </div>
+        </div>
+        <ul id="planets" class="planets"></ul>
+        <div id="kp" class="kp"></div>
+        <div id="showers" class="muted small"></div>
+      </section>
+    </div>
+
+    <section class="card wide">
+      <div class="row-head">
+        <div class="eyebrow">Around the house</div>
+        <div class="filters" id="filters">
+          <button class="chip on" data-k="all">All</button>
+          <button class="chip" data-k="bird">Birds</button>
+          <button class="chip" data-k="bat">Bats</button>
+          <button class="chip" data-k="mammal">Critters</button>
+          <button class="chip" data-k="weather">Weather</button>
+        </div>
+      </div>
+      <div class="heard" id="heard"></div>
+      <ol class="feed" id="feed"></ol>
+    </section>
+
+    <section class="card wide">
+      <div class="eyebrow">The neighborhood is saying</div>
+      <ol class="community" id="community"></ol>
+    </section>
+
+    <footer>
+      <div id="status" class="status"></div>
+      <div class="muted small"><a href="/site/">Archive of briefs and weekly roundups</a></div>
+    </footer>
+  </main>
+
+  <template id="tpl-event">
+    <li class="ev">
+      <div class="ev-media"></div>
+      <div class="ev-body">
+        <div class="ev-title"></div>
+        <div class="ev-sub"></div>
+      </div>
+      <time class="ev-time"></time>
+    </li>
+  </template>
+
+  <script src="/static/sky.js"></script>
+  <script src="/static/sound.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

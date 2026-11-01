@@ -1,0 +1,94 @@
+# Copy to config.yaml (gitignored) and edit. Secrets live in .env, not here.
+home:
+  name: "Pine Ridge"            # shown on the dashboard and in briefs
+  town: "Arlington, MA"
+  # Approximate town center. The Tempest station's own coordinates replace these
+  # automatically at startup, so your street address never needs to be written down.
+  latitude: 42.4154
+  longitude: -71.1565
+  timezone: America/New_York
+
+schedule:
+  poll_minutes: 5               # how often to poll Haikubox / Bird Buddy / Arlo / community feeds
+  morning_brief: "06:30"        # "HH:MM", or "sunrise-20" / "sunrise+0"
+  weekly_roundup: "sun 08:30"   # day + time
+
+tempest:
+  station_id: null              # null = first station on the token
+  websocket: true               # live lightning / rain-start / rapid wind from the cloud
+  udp: true                     # also listen on the LAN (port 50222); works with no internet
+
+haikubox:
+  bird_min_score: 0.0           # raise to filter low-confidence detections
+
+birdbuddy:
+  photos: true
+
+arlo:
+  animal_only: true             # only keep clips Arlo tags as Animal
+  identify_with_claude: true    # ask Claude to name the critter in the thumbnail
+
+community:
+  ebird_radius_km: 15
+  ebird_days_back: 3
+  inaturalist_radius_km: 4
+  # Any RSS/Atom feed. These are good defaults for Arlington / greater Boston.
+  rss:
+    - {name: "r/boston weather talk", kind: weather, url: "https://www.reddit.com/r/boston/search.rss?q=weather+OR+snow+OR+storm+OR+nor%27easter&restrict_sr=1&sort=new"}
+    - {name: "r/birding (Massachusetts)", kind: birding, url: "https://www.reddit.com/r/birding/search.rss?q=massachusetts+OR+boston&restrict_sr=1&sort=new"}
+    - {name: "r/astrophotography (Boston)", kind: astronomy, url: "https://www.reddit.com/r/astrophotography/search.rss?q=boston+OR+massachusetts&restrict_sr=1&sort=new"}
+  # Claude also searches these sites each morning/week for local chatter (forums without RSS).
+  web_watch_domains:
+    - americanwx.com            # New England weather forum
+    - groups.io                 # MASSBIRD and other listservs
+    - massaudubon.org
+    - ebird.org
+    - inaturalist.org
+    - atmob.org                 # Amateur Telescope Makers of Boston
+    - cloudynights.com
+    - spaceweatherlive.com
+    - reddit.com
+    - weather.gov
+
+sky:
+  aurora_kp_alert: 6            # Kp at which Arlington (~42.4N) has a shot at aurora
+
+alerts:                         # live phone pushes
+  lightning_km: 15
+  rain_start: true
+  notable_bird_km: 8            # eBird notable/rare within this distance
+  new_yard_species: true        # first detection this year from Haikubox or Bird Buddy
+  first_bat_of_night: true
+  arlo_animal: true
+  quiet_hours: ["22:30", "06:00"]   # pushes held (except severe weather) during these hours
+
+delivery:
+  email:
+    enabled: true
+    to: ["you@example.com"]
+  ntfy:
+    enabled: true
+    server: "https://ntfy.sh"
+  site:
+    dir: site                   # static, shareable pages are written here
+    public_base_url: ""         # e.g. https://yourname.github.io/pine-ridge  (used for links in email/push)
+    git_publish:                # optional: push site/ to a GitHub Pages repo after each roundup
+      enabled: false
+      repo_dir: ""              # a local clone of that Pages repo
+      share_arlo: false         # yard-camera stills stay private unless you flip this
+
+narration:
+  engine: auto                  # auto | say (macOS) | piper (Linux/Pi) | none
+  voice: ""                     # macOS e.g. "Ava (Premium)"; piper: path to .onnx voice model
+
+claude:
+  model: claude-opus-5-5
+  effort: medium
+
+skycam:                         # coming soon: skyward GoPro + 360 camera, see docs/skycam.md
+  enabled: false
+  gopro_host: "172.20.110.51:8080"   # Open GoPro over USB (wired, powered); WiFi is 10.5.5.9:8080
+  rules:
+    - {when: storm_approaching, action: timelapse, minutes: 45}
+    - {when: sunset_with_clouds, action: timelapse, minutes: 40}
+    - {when: lightning_close, action: night_lapse, minutes: 30}

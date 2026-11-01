@@ -1,0 +1,44 @@
+{% set tint = {"birds": "var(--bird)", "bats": "var(--bat)", "critters": "var(--critter)", "sky": "var(--sky)", "weather": "var(--rain)", "alert": "var(--alert)"} %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "_style.html" %}
+  <title>{{ home.name }} · {{ date.strftime("%A, %B %-d") }}</title>
+  <meta property="og:title" content="{{ b.headline }}">
+  <meta property="og:description" content="{{ b.greeting }}">
+</head>
+<body>
+  <header class="hero">
+    {% if hero_img %}<img src="{{ hero_img }}" alt="">{% endif %}
+    <div class="wrap">
+      <div class="kicker">{{ home.name }} · {{ date.strftime("%A, %B %-d") }}</div>
+      <h1>{{ b.headline }}</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="lede">{{ b.greeting }}</p>
+    {% if audio %}
+    <div class="listen"><audio controls preload="none" src="{{ audio }}"></audio></div>
+    {% endif %}
+    {% if daily %}
+    <div class="days">
+      {% for d in daily[:5] %}
+      <div>{{ d.ts | day if not loop.first else "Today" }}<b>{{ d.high_f | round | int }}°</b><span class="muted">{{ d.low_f | round | int }}°{% if d["pop"] and d["pop"] >= 20 %} · {{ d["pop"] }}%{% endif %}</span></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% for s in b.sections %}
+    <h2><i style="background: {{ tint.get(s.icon, 'var(--accent)') }}"></i>{{ s.title }}</h2>
+    <p>{{ s.body }}</p>
+    {% endfor %}
+    {% if sky and sky.moon %}
+    <div class="callout">
+      <h3>Tonight</h3>
+      <p>{{ sky.moon.phase }}, {{ sky.moon.illum }}% lit. Sunset {{ sky.sunset | clock }}; truly dark from {{ sky.dark_start | clock }}.
+      {% for p in sky.planets if p.visible_evening %}{% if loop.first %} Up at 9pm: {% endif %}{{ p.name }}{{ ", " if not loop.last else "." }}{% endfor %}</p>
+    </div>
+    {% endif %}
+    <footer>Written by the house at {{ home.name }}, {{ home.town }}, from its weather station, feeder camera, song and bat listener, and yard cameras, plus what neighbors and local enthusiasts reported.</footer>
+  </main>
+</body>
+</html>

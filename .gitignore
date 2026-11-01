@@ -1,0 +1,9 @@
+.env
+config.yaml
+data/
+site/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.aarlo/

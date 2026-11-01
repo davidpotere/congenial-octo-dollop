@@ -1,0 +1,67 @@
+{% set tint = {"birds": "var(--bird)", "bats": "var(--bat)", "critters": "var(--critter)", "sky": "var(--sky)", "weather": "var(--rain)", "alert": "var(--alert)"} %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "_style.html" %}
+  <title>{{ b.title }} · {{ home.name }}</title>
+  <meta property="og:title" content="{{ b.title }}">
+  <meta property="og:description" content="{{ b.share_blurb }}">
+  {% if hero_img %}<meta property="og:image" content="{{ hero_img }}">{% endif %}
+</head>
+<body>
+  <header class="hero">
+    {% if hero_img %}<img src="{{ hero_img }}" alt="">{% endif %}
+    <div class="wrap">
+      <div class="kicker">The week at {{ home.name }} · {{ date.strftime("%B %-d, %Y") }}</div>
+      <h1>{{ b.title }}</h1>
+      <p class="sub">{{ b.subtitle }}</p>
+    </div>
+  </header>
+  <main class="wrap">
+    <p class="lede">{{ b.intro }}</p>
+    {% if audio %}<div class="listen"><audio controls preload="none" src="{{ audio }}"></audio></div>{% endif %}
+
+    <div class="stats">
+      {% for s in b.stats %}<div class="stat"><b>{{ s.value }}</b><span>{{ s.label }}</span></div>{% endfor %}
+    </div>
+
+    {% if series and series|length > 4 %}
+    {% set temps = series | selectattr("t") | map(attribute="t") | list %}
+    {% if temps %}
+    {% set lo = temps | min %}{% set hi = temps | max %}{% set n = series | length %}
+    <svg class="chart" viewBox="0 0 700 120" role="img" aria-label="Temperature through the week">
+      <polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"
+        points="{% for p in series %}{% if p.t is not none %}{{ (loop.index0 / (n - 1) * 690 + 5) | round(1) }},{{ (100 - (p.t - lo) / ((hi - lo) or 1) * 80) | round(1) }} {% endif %}{% endfor %}"/>
+      <text x="5" y="116">{{ lo | round | int }}° low</text>
+      <text x="695" y="14" text-anchor="end">{{ hi | round | int }}° high</text>
+    </svg>
+    {% endif %}
+    {% endif %}
+
+    {% for c in b.chapters %}
+    <h2><i style="background: {{ tint.get(c.icon, 'var(--accent)') }}"></i>{{ c.title }}</h2>
+    <p>{{ c.body }}</p>
+    {% if c.media %}
+    <div class="media">
+      {% for m in c.media %}
+      <figure>
+        {% if m.img %}<img src="{{ m.img }}" alt="{{ m.caption }}" loading="lazy">{% endif %}
+        {% if m.audio %}<audio controls preload="none" src="{{ m.audio }}"></audio>{% endif %}
+        <figcaption>{{ m.caption }} · {{ m.time }}</figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <div class="callout"><h3>Species of the week · {{ b.species_of_the_week.name }}</h3><p>{{ b.species_of_the_week.why }}</p></div>
+    <h2><i style="background: var(--sky)"></i>Look up this week</h2>
+    <p>{{ b.sky_ahead }}</p>
+    <h2><i></i>Around the neighborhood</h2>
+    <p>{{ b.community }}</p>
+    <div class="callout"><h3>Try this</h3><p>{{ b.try_this }}</p></div>
+
+    <footer>{{ b.share_blurb }}<br><br>From the weather station, bird feeder camera, bird and bat listener, and yard cameras at {{ home.name }} in {{ home.town }}. Written with Claude.</footer>
+  </main>
+</body>
+</html>

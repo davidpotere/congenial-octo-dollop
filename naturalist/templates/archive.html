@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "_style.html" %}
+  <title>{{ home.name }} · Field notes</title>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div class="kicker">{{ home.town }}</div>
+      <h1>Field notes from {{ home.name }}</h1>
+    </div>
+  </header>
+  <main class="wrap">
+    <h2><i></i>Weekly roundups</h2>
+    {% for w in weekly %}<p><a href="{{ w.page }}">{{ w.id.replace("weekly-", "Week ") }}</a></p>{% else %}<p class="muted">The first roundup arrives at the end of the week.</p>{% endfor %}
+    <h2><i style="background: var(--accent)"></i>Mornings</h2>
+    {% for m in morning %}<p><a href="{{ m.page }}">{{ m.id.replace("morning-", "") }}</a></p>{% else %}<p class="muted">No mornings yet.</p>{% endfor %}
+  </main>
+</body>
+</html>
