@@ -32,6 +32,14 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
 The demo uses clearly labeled sample data. The sky, moon and planets are real.
 
+## Just the weather, in any browser (no home box)
+
+```bash
+python -m naturalist.web.build_live pine-ridge-live.html
+```
+
+This makes one self-contained HTML file. It talks directly to your Tempest (including the live lightning, rain and wind feed), NWS Boston (alerts and the forecasters' Key Messages), NOAA's aurora outlook and nearby iNaturalist sightings, and it computes the sun and moon locally. It asks for your Tempest token on first open and keeps it in that browser. Add `--token ...` to bake the token in, and if you do, keep that file private.
+
 ## Set it up for real
 
 1. `cp .env.example .env` and `cp config.example.yaml config.yaml`

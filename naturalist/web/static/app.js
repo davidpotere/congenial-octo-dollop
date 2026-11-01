@@ -238,12 +238,12 @@
     const b = state.morning; if (!b) return;
     const c = b.content;
     $("#brief-card").hidden = false;
-    $("#brief-kicker").textContent = "This morning · " + new Date(b.ts * 1000).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
+    $("#brief-kicker").textContent = (c.kicker || "This morning") + " · " + new Date(b.ts * 1000).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
     $("#brief-headline").textContent = c.headline;
     $("#brief-greeting").textContent = c.greeting;
     const tint = { birds: "var(--bird)", bats: "var(--bat)", critters: "var(--critter)", weather: "var(--rain)", sky: "var(--warm)", alert: "var(--alert)" };
     $("#brief-sections").innerHTML = c.sections.map(s => `<article><h3><i class="tag-dot" style="background:${tint[s.icon] || "var(--ink-3)"}"></i>${esc(s.title)}</h3><p>${esc(s.body)}</p></article>`).join("");
-    const links = [`<a href="/site/${esc(b.page)}">Open the full brief</a>`];
+    const links = b.page ? [`<a href="/site/${esc(b.page)}">Open the full brief</a>`] : (c.links || []).map(l => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`);
     if (state.weekly) links.push(`<a href="/site/${esc(state.weekly.page)}">This week's roundup: ${esc(state.weekly.content.title)}</a>`);
     $("#brief-links").innerHTML = links.join("");
     $("#btn-brief").onclick = () => playBrief(b);
@@ -255,7 +255,7 @@
     btn.innerHTML = playing ? '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
     const done = () => { btn.classList.remove("playing"); btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'; };
     if (!playing) { briefAudio?.pause(); speechSynthesis.cancel(); return; }
-    if (b.audio) { briefAudio = new Audio("/site/" + b.audio); briefAudio.onended = done; briefAudio.play(); return; }
+    if (b.audio && !P) { briefAudio = new Audio("/site/" + b.audio); briefAudio.onended = done; briefAudio.play(); return; }
     const u = new SpeechSynthesisUtterance(b.content.narration);
     const v = speechSynthesis.getVoices().find(v => /en-US/.test(v.lang) && /(Premium|Enhanced|Natural|Samantha|Ava)/.test(v.name));
     if (v) u.voice = v; u.rate = 0.98; u.onend = done; speechSynthesis.speak(u);
@@ -279,15 +279,21 @@
   };
   $("#btn-sound").onclick = () => { const on = window.Sound.toggle(); $("#btn-sound").setAttribute("aria-pressed", on); };
 
+  // A provider lets the same dashboard run without the home box (see live.html).
+  const P = window.NATURALIST_PROVIDER;
+
   async function load() {
-    state = await (await fetch("/api/state")).json();
+    state = P ? await P.load() : await (await fetch("/api/state")).json();
     renderAll();
   }
 
   function live() {
+    if (P) return P.live(handle);
     const es = new EventSource("/api/stream");
-    es.onmessage = m => {
-      const msg = JSON.parse(m.data);
+    es.onmessage = m => handle(JSON.parse(m.data));
+  }
+
+  function handle(msg) {
       if (msg.type === "now") { state.now[msg.key] = msg.value; if (msg.key === "weather" || msg.key === "forecast" || msg.key === "sky") { renderNow(); renderHourly(); renderDaily(); renderSky(); } if (msg.key === "haikubox_today") renderHeard(); }
       else if (msg.type === "event") {
         const e = msg.event;
@@ -295,7 +301,6 @@
       } else if (msg.type === "lightning") { window.Sky.flash(); window.Sound.thunder(msg.distance_mi); }
       else if (msg.type === "wind") { window.Sound.set({ wind: msg.mph }); window.Sky.set({ wind: msg.mph }); }
       else if (msg.type === "brief") load();
-    };
   }
 
   load().then(live);
