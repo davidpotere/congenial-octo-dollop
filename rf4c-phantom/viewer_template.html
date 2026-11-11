@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RF-4C Phantom Kit</title>
+<style>
+  :root { --bg: #e9ecef; --fg: #1d2329; --muted: #5b646d; --card: rgba(255,255,255,.82); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #14181c; --fg: #e8ecef; --muted: #9aa4ad; --card: rgba(30,35,40,.82); } }
+  :root[data-theme="dark"] { --bg: #14181c; --fg: #e8ecef; --muted: #9aa4ad; --card: rgba(30,35,40,.82); }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+  #c { position: fixed; inset: 0; }
+  .card { position: fixed; left: 16px; top: 16px; max-width: min(360px, calc(100vw - 32px));
+    background: var(--card); backdrop-filter: blur(6px); border-radius: 10px; padding: 12px 14px; }
+  h1 { font-size: 16px; margin: 0 0 2px; }
+  p { margin: 0; color: var(--muted); font-size: 13px; }
+  .sw { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font-size: 12px; }
+  .sw span { display: inline-flex; align-items: center; gap: 5px; }
+  .sw i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="card">
+  <h1>RF-4C Phantom II, 1:72</h1>
+  <p>10th TRW, RAF Alconbury, 1972. Southeast Asia camouflage. Drag to orbit, scroll to zoom.</p>
+  <div class="sw">
+    <span><i style="background:#9C825E"></i>Tan</span>
+    <span><i style="background:#5C663E"></i>Green</span>
+    <span><i style="background:#3A4130"></i>Dark green</span>
+    <span><i style="background:#C8CBCB"></i>Light gray</span>
+    <span><i style="background:#3A5A8C"></i>Canopy</span>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 5000);
+camera.up.set(0, 0, 1);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(-200, -300, 500); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(300, 200, -100); scene.add(fill);
+
+const b64 = "__GLB__";
+const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+new GLTFLoader().parse(bin, "", gltf => {
+  const root = gltf.scene;
+  root.traverse(o => { if (o.isMesh) {
+    o.material.metalness = 0; o.material.roughness = 0.8; o.material.side = THREE.DoubleSide;
+    o.geometry.computeVertexNormals(); } });
+  scene.add(root);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root);
+  const c = box.getCenter(new THREE.Vector3()), r = box.getSize(new THREE.Vector3()).length() / 2;
+  controls.target.copy(c);
+  const q = new URLSearchParams(location.hash.slice(1));
+  const az = THREE.MathUtils.degToRad(+(q.get("az") ?? 225)), el = THREE.MathUtils.degToRad(+(q.get("el") ?? 22));
+  const d = r * (+(q.get("d") ?? 2.3));
+  camera.position.set(c.x + d * Math.cos(el) * Math.cos(az), c.y + d * Math.cos(el) * Math.sin(az), c.z + d * Math.sin(el));
+  window.ready = true;
+});
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener("resize", resize); resize();
+const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+scene.background = new THREE.Color(bg || "#e9ecef");
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>
